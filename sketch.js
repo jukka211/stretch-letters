@@ -14,8 +14,12 @@ const HANDLE_SIZE = 12;
 const MIN_FACTOR = 0.1;  // minimum width/height per column/row
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  noStroke();
+  canvasElem = createCanvas(windowWidth, windowHeight);
+// Prevent page scrolling/zoom on touch
+canvasElem.elt.style.touchAction = 'none';
+canvasElem.elt.addEventListener('touchstart', e => e.preventDefault());
+canvasElem.elt.addEventListener('touchmove',  e => e.preventDefault());
+noStroke();
   // create sliders
   sliderCols = createSlider(1, 10, cols, 1);
   sliderRows = createSlider(1, 10, rows, 1);
@@ -131,6 +135,12 @@ function draw() {
     textAlign(LEFT, CENTER);
     text(`Cols: ${cols}`, 20, gridH + 12);
     text(`Rows: ${rows}`, 180, gridH + 12);
+
+     // Continuous mobile drag support
+  if (touches.length > 0 && (activeColHandle !== null || activeRowHandle !== null)) {
+    // use the first touch point
+    handleDrag(touches[0].x, touches[0].y);
+  }
 }  
 
 function mousePressed() {
@@ -143,19 +153,15 @@ function mouseReleased() {
   activeColHandle = activeRowHandle = null;
 }
 
-// TOUCH SUPPORT
 function touchStarted() {
   handlePress(touchX, touchY);
-  return false;
-}
-function touchMoved() {
-  handleDrag(touchX, touchY);
   return false;
 }
 function touchEnded() {
   activeColHandle = activeRowHandle = null;
   return false;
 }
+
 
 function handlePress(mx, my) {
   let gridW = width, gridH = height - PANEL_H;
